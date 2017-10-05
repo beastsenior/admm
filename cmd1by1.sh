@@ -1,6 +1,6 @@
 #!/bin/bash                                          
 if [ "$#" -ne 2 ] ; then                             
-    echo "USAGE: $0 -f server_list_file cmd"         
+    echo "USAGE: $0 server_list_file cmd"         
     exit -1                                          
 fi                                                   
                                                      
@@ -21,7 +21,7 @@ do
     #echo $line                                      
     if [ -n "$line" ] ; then                         
         echo "DOING--->>>>>" $line "<<<<<<<"         
-        ssh -i /root/id_dsa $line $cmd_str < /dev/null > /dev/null                                                                                                                  
+        ssh -i /root/id_dsa -o StrictHostKeyChecking=no $line $cmd_str < /dev/null > /dev/null                                                                                                                  
         if [ $? -eq 0 ] ; then                       
             echo "$cmd_str done!"                    
         else                                         
