@@ -2,36 +2,29 @@
 
 import userdefine as ud
 import socket
+import os
 import struct
 import time
 
-import types #临时
-
-ip=ud.get_ip('eth1')
+ip = ud.get_ip('eth1')
 address = (ip, ud.PORT)  
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
-s.bind(address)  
+ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
+ser.bind(address)  
 
-num0=0
-num1=0
 while True:  
-	msg, addr = s.recvfrom(1024)  
+	msg, addr = ser.recvfrom(1024)  
 	
-	if not msg:  
-		print("client has exist.")  
-		break
-	else:
-		num=struct.unpack('d',msg)
-		time.sleep(1)
-	
-	#print("received:", num, "from", addr)  
-	if addr[0]=='172.16.100.2':
-		num0=num0+1
-	elif addr[0]=='172.16.100.3':
-		num1=num1+1
-	else:
-		print("from error ip")
-	
-	print("num0:", num0, "num1:", num1, "received:", num, "from", addr)
+	pid = os.fork() #进入多进程处理
+	if pid==0:      #子进程，pid=0
+		ser.close()
+		if not msg:  
+			print("client has exist.")  
+			break
+		else:
+			num=struct.unpack('d',msg)
+		print("pid:", pid, "received:", num, "from", addr)
+		os._exit(0)
+	else:           #父进程，此时pid=子进程进程号
+		continue
 
-s.close()  
+ser.close()  
