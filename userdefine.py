@@ -1,3 +1,5 @@
+import netifaces
+
 #-------variable-------
 
 #port of server
