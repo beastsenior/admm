@@ -9,18 +9,20 @@
 import struct
 
 #value of RHO
-RHO = 0.05
+RHO = 0.000001
 
 #bridge compute Xk1, Yk and Zk1 
-def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge)
+def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
 	sum_Yk = 0.0
-	for addr in active_bridge
+	sum_Zk = 0.0
+	for addr in active_bridge:
 		sum_Yk = sum_Yk + Yk[addr]
-	return (12.0 + RHO*(Zk*num_active_bridge-sum_Yk))/(4.0+RHO*num_active_bridge)
-	
+		sum_Zk = sum_Zk + Zk[addr]
+	return (12.0 + RHO*(sum_Zk-sum_Yk))/(4.0+RHO*num_active_bridge)
+
 def get_Yk(Xk, Yk_1, Zk):
 	return Yk_1+RHO*(Xk-Zk)
-
+	
 def get_Zk1(Xk1, Yk, active_worker, num_active_worker):
 	sum_tmp = 0.0
 	for addr in active_worker:
