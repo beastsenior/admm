@@ -20,7 +20,7 @@ NN = 20
 #connetion rate of node pair
 CONNETION_RATE = 0.5
 
-#init a random delay network
+#init a random delay network topology
 def rand_topology():
 	adjacency_matrix = {}  #adjacency matrix with delay value
 	for i in range(NN):
@@ -46,41 +46,70 @@ def load_topology(loading_file='adjacency_matrix.txt'):
 	fp.close
 	return eval(adjacency_matrix_str)
 
+#all neighbor worker and itself, include active and resting nodes, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and i is the number of neighbor worker, include itself
+def get_neighbor_worker(adjacency_matrix):
+	neighbor_worker = []
+	i = 0
+	for ip in IPLIST:
+		if adjacency_matrix[(ni.LOCAL_IP, ip)] != MAXDOUBLE:
+			neighbor_worker.append((ip, ni.PORT))
+			i = i + 1
+	return neighbor_worker, i 
+	
+#all neighbor bridge and itself, include active and resting nodes, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and i is the number of neighbor bridge, include itself
+def get_neighbor_bridge(adjacency_matrix):
+	neighbor_bridge = []
+	i = 0
+	for ip in IPLIST:
+		if adjacency_matrix[(ip, ni.LOCAL_IP)] != MAXDOUBLE:
+			neighbor_bridge.append((ip, ni.OUTPORT))
+			i = i + 1
+	return neighbor_bridge, i 
+	
+	
+	
+#mask of the bridge and worker
+def get_full_mask(adjacency_matrix):
+	topology_mask={}
+	for from_bridge in IPLIST:
+		for to_worker in IPLIST:
+			if adjacency_matrix[(from_bridge, to_worker)] == MAXDOUBLE:
+				topology_mask[(from_bridge, to_worker)] = 0
+			else:
+				topology_mask[(from_bridge, to_worker)] = 1
+	return topology_mask
+	
+#save topology to file
+def save_mask(topology_mask, saving_file='topology_mask.txt'):
+	fp = open(saving_file, 'w')
+	fp.write(str(topology_mask))
+	fp.close
+
+#load topology from file
+def load_mask(loading_file='topology_mask.txt'):
+	fp = open(loading_file, 'r')
+	topology_mask_str = fp.read()
+	fp.close
+	return eval(topology_mask_str)
+	
 #get active neighbor worker, include itself, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and the number of active neighbor worker, include itself
-def get_active_worker(adjacency_matrix):
+def get_active_worker(topology_mask):
 	active_worker = []
 	i = 0
 	for ip in IPLIST:
-		if adjacency_matrix[(ni.LOCAL_IP, ip)] != MAXDOUBLE:
+		if topology_mask[(ni.LOCAL_IP, ip)] == 1:
 			active_worker.append((ip, ni.PORT))
 			i = i + 1
-	return active_worker, i 	#eg. active_worker=[('172.16.100.2', ni.PORT), ('172.16.100.3', ni.PORT), ('172.16.100.5', ni.PORT)]
+	return active_worker, i 	#eg. active_worker=[('172.16.100.2', ni.PORT), ('172.16.100.3', ni.PORT), ('172.16.100.5', ni.PORT)], i=3
 
-
-def get_active_bridge(adjacency_matrix):
+#get active neighbor bridge, include itself, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and the number of active neighbor bridge, include itself
+def get_active_bridge(topology_mask):
 	active_bridge = []
 	i = 0
 	for ip in IPLIST:
-		if adjacency_matrix[(ni.LOCAL_IP, ip)] != MAXDOUBLE:
+		if topology_mask[(ip, ni.LOCAL_IP)] != MAXDOUBLE:
 			active_bridge.append((ip, ni.OUTPORT))
 			i = i + 1
-	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)]
+	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)], i=2
 
-#test-----------
-# tmp_to = rand_topology()
-# for i in IPLIST:
-	# for j in IPLIST:
-		# print(i, '-->', j, tmp_to[(i,j)])
-# print('\n\n')
-# save_topology(tmp_to)
-# tmp_to = load_topology()
-# print(tmp_to)
-# print('\n\n')
-# for i in IPLIST:
-	# for j in IPLIST:
-		# print(i, '-->', j, tmp_to[(i,j)])
-# active_bridge, num = get_active_bridge(tmp_to)
-# print('\n\n')
-# print(num)
-# print(active_bridge)
 

@@ -24,20 +24,11 @@ Yk = {}
 Zk = random.random()
 Zk1 = 0
 
-#creat topology
-tmp_to = rand_topology()
-for i in IPLIST:
-	for j in IPLIST:
-		print(i, '-->', j, tmp_to[(i,j)])
-time.sleep(10)
-save_topology(tmp_to)
-adjacency_matrix = load_topology()
-
 while True:
-	active_worker, num_active_worker  = to.get_active_worker(adjacency_matrix)  #renew the list of active neighbor worker. active_worker is active neighbor worker list, eg. [['172.16.100.3',27514],['172.16.100.7',27511]]. num_active_worker is the number of active neighbor worker
+	active_worker, num_active_worker  = to.get_active_worker(to.load_mask())  #renew the list of active neighbor worker. active_worker is active neighbor worker list, eg. [['172.16.100.3',27514],['172.16.100.7',27511]]. num_active_worker is the number of active neighbor worker
 	s_msg = struct.pack('d',Zk)
 	print ('\n')
-	#time.sleep(2)  
+	time.sleep(3)  
 	for addr in active_worker:
 		ser.sendto(s_msg, addr)
 		print ('Send:', 'Zk=', Zk, '-->', addr)

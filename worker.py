@@ -25,7 +25,7 @@ Yk = {}
 Yk_1 = {}
 Zk = {}  
 
-active_bridge, num_active_bridge  = to.get_active_bridge()
+active_bridge, num_active_bridge  = to.get_active_bridge(to.load_mask())
 
 for addr in active_bridge:
 	Yk[addr] = 0
