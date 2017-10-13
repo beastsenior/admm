@@ -3,20 +3,25 @@ import sys
 import struct
 import random
 
+#number of node
+# NN = 20
+NN = 10
 #node ip list
+# IPLIST = [\
+# '172.16.100.2',  '172.16.100.3',  '172.16.100.4',  '172.16.100.5',  '172.16.100.6',  \
+# '172.16.100.7',  '172.16.100.8',  '172.16.100.9',  '172.16.100.10', '172.16.100.11', \
+# '172.16.100.12', '172.16.100.13', '172.16.100.14', '172.16.100.15', '172.16.100.16', \
+# '172.16.100.17', '172.16.100.18', '172.16.100.19', '172.16.100.20', '172.16.100.21', \
+# ]
 IPLIST = [\
 '172.16.100.2',  '172.16.100.3',  '172.16.100.4',  '172.16.100.5',  '172.16.100.6',  \
 '172.16.100.7',  '172.16.100.8',  '172.16.100.9',  '172.16.100.10', '172.16.100.11', \
-'172.16.100.12', '172.16.100.13', '172.16.100.14', '172.16.100.15', '172.16.100.16', \
-'172.16.100.17', '172.16.100.18', '172.16.100.19', '172.16.100.20', '172.16.100.21', \
 ]
 
 #max double number
 MAXDOUBLE = sys.float_info.max
 #max double number in packed type
 PMD = struct.pack('d', MAXDOUBLE)
-#number of node
-NN = 20
 #connetion rate of node pair
 CONNETION_RATE = 0.5
 
@@ -98,6 +103,7 @@ def get_active_worker(topology_mask):
 	i = 0
 	for ip in IPLIST:
 		if topology_mask[(ni.LOCAL_IP, ip)] == 1:
+
 			active_worker.append((ip, ni.PORT))
 			i = i + 1
 	return active_worker, i 	#eg. active_worker=[('172.16.100.2', ni.PORT), ('172.16.100.3', ni.PORT), ('172.16.100.5', ni.PORT)], i=3
@@ -107,7 +113,7 @@ def get_active_bridge(topology_mask):
 	active_bridge = []
 	i = 0
 	for ip in IPLIST:
-		if topology_mask[(ip, ni.LOCAL_IP)] != MAXDOUBLE:
+		if topology_mask[(ip, ni.LOCAL_IP)] == 1:
 			active_bridge.append((ip, ni.OUTPORT))
 			i = i + 1
 	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)], i=2
