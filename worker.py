@@ -35,11 +35,13 @@ while True:
 	r_msg_tmp, addr = ser.recvfrom(1024)  
 	if r_msg_tmp == to.PMD:  #when some bridge leave, it will send a massage (PMD) to its worker  
 		active_bridge.remove(addr)
+		print(active_bridge, '-', addr) #addr bridge leave (rest)
 		num_active_bridge = num_active_bridge - 1
 	else:
 		r_msg[addr] = r_msg_tmp
 		if addr in active_bridge:
 			num_r_msg = num_r_msg + 1
+			print('A massage from', addr, '... (', num_r_msg, '/', num_active_bridge, ')')
 			if num_r_msg == num_active_bridge:
 				for addr in active_bridge:
 					Zk[addr] = (struct.unpack('d', r_msg[addr]))[0]
@@ -57,5 +59,5 @@ while True:
 			active_bridge.append(addr)
 			num_active_bridge = num_active_bridge + 1
 			num_r_msg = num_r_msg + 1
-			print('A new bridge join, from:', addr)
+			print(active_bridge, '+', addr) #addr join as a new bridge (active)
 ser.close()  
