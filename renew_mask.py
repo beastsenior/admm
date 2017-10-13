@@ -16,7 +16,7 @@ print('\n\n')
 topology_mask = to.get_full_mask(adjacency_matrix)
 for i in to.IPLIST:
 	for j in to.IPLIST:
-		print(i, '-->', j, to.topology_mask[(i,j)])
+		print(i, '-->', j, topology_mask[(i,j)])
 print('\n\n')
 to.save_mask(topology_mask)
 topology_mask = to.load_mask()
