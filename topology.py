@@ -1,7 +1,6 @@
 import net_interface as ni
 import struct
 import random
-import pymysql
 
 #number of node
 # NN = 20
@@ -23,7 +22,7 @@ MAXDOUBLE = 1.7976931348622e+308
 #max double number in packed type
 PMD = struct.pack('d', MAXDOUBLE)
 #connetion rate of node pair
-CONNETION_RATE = 0.5
+CONNETION_RATE = 0.3
 
 #init a random delay network topology
 def rand_topology():
@@ -32,34 +31,27 @@ def rand_topology():
 		adjacency_matrix[(IPLIST[i], IPLIST[i])] = 0.0  #the delay between node and itself is 0
 		for j in range(i):
 			tmp = random.random()
-			if tmp > CONNETION_RATE:
+			if tmp > (1-CONNETION_RATE):
 				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = tmp - CONNETION_RATE  #network delay between node pair
 			else:
 				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = MAXDOUBLE #when delay = MAXDOUBLE means delay = infinity
 	return adjacency_matrix
 
 #save topology to file
-def save_topology(adjacency_matrix, mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
-	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
-	cursor = conn.cursor()
+def save_topology(adjacency_matrix, conn, cursor):
+	cursor.execute('lock tables t write')
 	cursor.execute('truncate table t')
 	for b2w in adjacency_matrix:
 		cursor.execute('insert into t(b2w,d) values(%s,%s)', (str(b2w),adjacency_matrix[b2w]))
 	conn.commit()
-	cursor.close()
-	conn.close()
-
+	cursor.execute('unlock tables')
 
 #load topology from file
-def load_topology(mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
+def load_topology(conn, cursor):
 	adjacency_matrix={}
-	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
-	cursor = conn.cursor()
 	cursor.execute('select * from t')
-	adjacency_matrix_tuple = cursor.fetchall()
 	conn.commit()
-	cursor.close()
-	conn.close()
+	adjacency_matrix_tuple = cursor.fetchall()
 	for i in range(NN*NN):
 		adjacency_matrix[eval(adjacency_matrix_tuple[i][0])]=adjacency_matrix_tuple[i][1]
 	return adjacency_matrix
@@ -85,7 +77,6 @@ def get_neighbor_bridge(adjacency_matrix):
 	return neighbor_bridge, i 
 	
 	
-	
 #mask of the bridge and worker
 def get_full_mask(adjacency_matrix):
 	adjacency_mask={}
@@ -98,26 +89,21 @@ def get_full_mask(adjacency_matrix):
 	return adjacency_mask
 	
 #save mask to file
-def save_mask(adjacency_mask, mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
-	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
-	cursor = conn.cursor()
+def save_mask(adjacency_mask, conn, cursor):
+	cursor.execute('lock tables m write')
 	cursor.execute('truncate table m')
 	for b2w in adjacency_mask:
 		cursor.execute('insert into m(b2w,c) values(%s,%s)', (str(b2w),adjacency_mask[b2w]))
 	conn.commit()
-	cursor.close()
-	conn.close()
+	cursor.execute('unlock tables')
 
 #load mask from file
-def load_mask(mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
+def load_mask(conn, cursor):
 	get_mask_dict={}
-	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
-	cursor = conn.cursor()
 	cursor.execute('select * from m')
-	get_mask_tuple = cursor.fetchall()
 	conn.commit()
-	cursor.close()
-	conn.close()
+	get_mask_tuple = cursor.fetchall()
+	print('len(get_mask_tuple)=',len(get_mask_tuple))
 	for i in range(NN*NN):
 		get_mask_dict[eval(get_mask_tuple[i][0])]=get_mask_tuple[i][1]
 	return get_mask_dict
@@ -128,7 +114,6 @@ def get_active_worker(adjacency_mask):
 	i = 0
 	for ip in IPLIST:
 		if adjacency_mask[(ni.LOCAL_IP, ip)] == 1:
-
 			active_worker.append((ip, ni.PORT))
 			i = i + 1
 	return active_worker, i 	#eg. active_worker=[('172.16.100.2', ni.PORT), ('172.16.100.3', ni.PORT), ('172.16.100.5', ni.PORT)], i=3
@@ -143,3 +128,14 @@ def get_active_bridge(adjacency_mask):
 			i = i + 1
 	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)], i=2
 
+# print('1-----------------\n\n')
+# t=load_mask(cursor)
+# print(t)
+# time.sleep(10)
+# print('2-----------------\n\n')
+# t=load_mask(cursor)
+# print(t)
+# cursor.close()
+# conn.close()
+# m=load_mask()
+# print(m)
