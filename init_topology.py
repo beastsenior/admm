@@ -1,6 +1,6 @@
 import topology as to
 
-#creat topology file
+#creat topology file with random
 tmp_to = to.rand_topology()
 for i in to.IPLIST:
 	for j in to.IPLIST:

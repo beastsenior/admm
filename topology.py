@@ -1,7 +1,7 @@
 import net_interface as ni
-import sys
 import struct
 import random
+import pymysql
 
 #number of node
 # NN = 20
@@ -18,8 +18,8 @@ IPLIST = [\
 '172.16.100.7',  '172.16.100.8',  '172.16.100.9',  '172.16.100.10', '172.16.100.11', \
 ]
 
-#max double number
-MAXDOUBLE = sys.float_info.max
+#max double number（本来应该是1.7976931348623157e+308，但有问题，不妨设为1.7976931348622e+308） 
+MAXDOUBLE = 1.7976931348622e+308
 #max double number in packed type
 PMD = struct.pack('d', MAXDOUBLE)
 #connetion rate of node pair
@@ -29,7 +29,7 @@ CONNETION_RATE = 0.5
 def rand_topology():
 	adjacency_matrix = {}  #adjacency matrix with delay value
 	for i in range(NN):
-		adjacency_matrix[(IPLIST[i], IPLIST[i])] = 0  #the delay between node and itself is 0
+		adjacency_matrix[(IPLIST[i], IPLIST[i])] = 0.0  #the delay between node and itself is 0
 		for j in range(i):
 			tmp = random.random()
 			if tmp > CONNETION_RATE:
@@ -39,17 +39,30 @@ def rand_topology():
 	return adjacency_matrix
 
 #save topology to file
-def save_topology(adjacency_matrix, saving_file='adjacency_matrix.txt'):
-	fp = open(saving_file, 'w')
-	fp.write(str(adjacency_matrix))
-	fp.close
+def save_topology(adjacency_matrix, mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
+	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
+	cursor = conn.cursor()
+	cursor.execute('truncate table t')
+	for b2w in adjacency_matrix:
+		cursor.execute('insert into t(b2w,d) values(%s,%s)', (str(b2w),adjacency_matrix[b2w]))
+	conn.commit()
+	cursor.close()
+	conn.close()
+
 
 #load topology from file
-def load_topology(loading_file='adjacency_matrix.txt'):
-	fp = open(loading_file, 'r')
-	adjacency_matrix_str = fp.read()
-	fp.close
-	return eval(adjacency_matrix_str)
+def load_topology(mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
+	adjacency_matrix={}
+	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
+	cursor = conn.cursor()
+	cursor.execute('select * from t')
+	adjacency_matrix_tuple = cursor.fetchall()
+	conn.commit()
+	cursor.close()
+	conn.close()
+	for i in range(NN*NN):
+		adjacency_matrix[eval(adjacency_matrix_tuple[i][0])]=adjacency_matrix_tuple[i][1]
+	return adjacency_matrix
 
 #all neighbor worker and itself, include active and resting nodes, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and i is the number of neighbor worker, include itself
 def get_neighbor_worker(adjacency_matrix):
@@ -75,47 +88,58 @@ def get_neighbor_bridge(adjacency_matrix):
 	
 #mask of the bridge and worker
 def get_full_mask(adjacency_matrix):
-	topology_mask={}
+	adjacency_mask={}
 	for from_bridge in IPLIST:
 		for to_worker in IPLIST:
 			if adjacency_matrix[(from_bridge, to_worker)] == MAXDOUBLE:
-				topology_mask[(from_bridge, to_worker)] = 0
+				adjacency_mask[(from_bridge, to_worker)] = -1  #no connection
 			else:
-				topology_mask[(from_bridge, to_worker)] = 1
-	return topology_mask
+				adjacency_mask[(from_bridge, to_worker)] = 1  #from_bridge is a bridge for to_worker; to_worker is a worker for from_bridge
+	return adjacency_mask
 	
-#save topology to file
-def save_mask(topology_mask, saving_file='topology_mask.txt'):
-	fp = open(saving_file, 'w')
-	fp.write(str(topology_mask))
-	fp.close
+#save mask to file
+def save_mask(adjacency_mask, mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
+	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
+	cursor = conn.cursor()
+	cursor.execute('truncate table m')
+	for b2w in adjacency_mask:
+		cursor.execute('insert into m(b2w,c) values(%s,%s)', (str(b2w),adjacency_mask[b2w]))
+	conn.commit()
+	cursor.close()
+	conn.close()
 
-#load topology from file
-def load_mask(loading_file='topology_mask.txt'):
-	fp = open(loading_file, 'r')
-	topology_mask_str = fp.read()
-	fp.close
-	return eval(topology_mask_str)
+#load mask from file
+def load_mask(mysql_host='172.16.100.1', mysql_port=3306, mysql_user='nodes', mysql_passwd='172.nodes', mysql_db='admm'):
+	get_mask_dict={}
+	conn = pymysql.connect(host=mysql_host, port=mysql_port, user=mysql_user, passwd=mysql_passwd, db=mysql_db)
+	cursor = conn.cursor()
+	cursor.execute('select * from m')
+	get_mask_tuple = cursor.fetchall()
+	conn.commit()
+	cursor.close()
+	conn.close()
+	for i in range(NN*NN):
+		get_mask_dict[eval(get_mask_tuple[i][0])]=get_mask_tuple[i][1]
+	return get_mask_dict
 	
 #get active neighbor worker, include itself, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and the number of active neighbor worker, include itself
-def get_active_worker(topology_mask):
+def get_active_worker(adjacency_mask):
 	active_worker = []
 	i = 0
 	for ip in IPLIST:
-		if topology_mask[(ni.LOCAL_IP, ip)] == 1:
+		if adjacency_mask[(ni.LOCAL_IP, ip)] == 1:
 
 			active_worker.append((ip, ni.PORT))
 			i = i + 1
 	return active_worker, i 	#eg. active_worker=[('172.16.100.2', ni.PORT), ('172.16.100.3', ni.PORT), ('172.16.100.5', ni.PORT)], i=3
 
 #get active neighbor bridge, include itself, eg. [('172.16.100.3',27514),('172.16.100.7',27511)], and the number of active neighbor bridge, include itself
-def get_active_bridge(topology_mask):
+def get_active_bridge(adjacency_mask):
 	active_bridge = []
 	i = 0
 	for ip in IPLIST:
-		if topology_mask[(ip, ni.LOCAL_IP)] == 1:
+		if adjacency_mask[(ip, ni.LOCAL_IP)] == 1:
 			active_bridge.append((ip, ni.OUTPORT))
 			i = i + 1
 	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)], i=2
-
 
