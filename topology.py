@@ -103,7 +103,6 @@ def load_mask(conn, cursor):
 	cursor.execute('select * from m')
 	conn.commit()
 	get_mask_tuple = cursor.fetchall()
-	print('len(get_mask_tuple)=',len(get_mask_tuple))
 	for i in range(NN*NN):
 		get_mask_dict[eval(get_mask_tuple[i][0])]=get_mask_tuple[i][1]
 	return get_mask_dict
@@ -127,15 +126,3 @@ def get_active_bridge(adjacency_mask):
 			active_bridge.append((ip, ni.OUTPORT))
 			i = i + 1
 	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)], i=2
-
-# print('1-----------------\n\n')
-# t=load_mask(cursor)
-# print(t)
-# time.sleep(10)
-# print('2-----------------\n\n')
-# t=load_mask(cursor)
-# print(t)
-# cursor.close()
-# conn.close()
-# m=load_mask()
-# print(m)

@@ -20,6 +20,8 @@ cursor = conn.cursor()
 
 r_msg={}  #received massage
 num_err_r_msg = 0  #number of error received massage
+num_active_worker = 0 #number of active neighbor worker. 
+old_active_worker = [] #list of active workers on last polling
 
 #receive Xk1 and Yk
 #own Zk
@@ -31,23 +33,28 @@ Zk1 = 0
 
 time.sleep(10)
 
-#get the list of active neighbor worker. 
-num_active_worker = 0
-while num_active_worker == 0:
-	active_worker, num_active_worker  = to.get_active_worker(to.load_mask(conn, cursor))  
-	time.sleep(2)
-
 while True:
-	#send Zk to worker
-	s_msg = struct.pack('d',Zk)
+	#poll mask, get the list of active worker. 
+	active_worker, num_active_worker = to.get_active_worker(to.load_mask(conn, cursor))  
+	if num_active_worker == 0:
+		while num_active_worker == 0:	
+			time.sleep(2)
+			active_worker, num_active_worker = to.get_active_worker(to.load_mask(conn, cursor)) 		
 	print('\n')
 	print('number of active worker:', num_active_worker)
-	#time.sleep(3)  
+
+	#send PMD to nodes, which have left
+	for addr in list(set(old_active_worker).difference(set(active_worker))):	#list(set(active_worker).difference(set(active_worker_renew)) is (active_worker - active_worker_renew), to find which nodes have left
+		ser.sendto(to.PMD, addr)		
+		print('Send:', '---PMD---', to.PMD, '-->', addr)
+	old_active_worker = active_worker
+	#send Zk to active worker
+	s_msg = struct.pack('d',Zk)
 	for addr in active_worker:
 		ser.sendto(s_msg, addr)
 		print ('Send:', 'Zk=', Zk, '-->', addr)
 		
-	num_r_msg = 0  #number of received massage
+	num_r_msg = 0  #number of received massage (massage of Xk1 and Yk)
 	while True:
 		r_msg_tmp, addr = ser.recvfrom(1024) 
 		r_msg[addr] = r_msg_tmp
@@ -65,19 +72,6 @@ while True:
 			num_err_r_msg = num_err_r_msg + 1
 			print (num_err_r_msg, ' EEEEEEEEEEEEEEEEEEEEEEEError_______________msg <- ', addr) 
 			time.sleep(100)
-
-	#renew the list of active neighbor worker. 
-	#active_worker is active neighbor worker list, eg. [['172.16.100.3',27514],['172.16.100.7',27511]]. 
-	#num_active_worker is the number of active neighbor worker
-	#list(set(active_worker).difference(set(active_worker_renew)) is (active_worker - active_worker_renew), to find which nodes have left
-	active_worker_renew, num_active_worker_renew  = to.get_active_worker(to.load_mask(conn, cursor))  
-	for addr in list(set(active_worker).difference(set(active_worker_renew))):
-		ser.sendto(to.PMD, addr)		
-		print('Send:', '---PMD---', to.PMD, '-->', addr)
-	while num_active_worker_renew <= 0:  #if there is no active worker
-		time.sleep(2)
-		active_worker_renew, num_active_worker_renew  = to.get_active_worker(to.load_mask(conn, cursor)) 
-	active_worker, num_active_worker = active_worker_renew, num_active_worker_renew
 
 cursor.close()
 conn.close()
