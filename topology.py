@@ -129,3 +129,12 @@ def get_active_bridge(adjacency_mask):
 			active_bridge.append((ip, ni.OUTPORT))
 			i = i + 1
 	return active_bridge, i    #eg. active_bridge=[('172.16.100.2', ni.OUTPORT),('172.16.100.3', ni.OUTPORT)], i=2
+
+#max delay of the active worker or bridge (this is for simulation of network delay, which depends on slowest active worker or bridge)
+def max_delay(adjacency_matrix, active_node):
+	max_delay = 0.0
+	for addr in active_node:
+		if adjacency_matrix[(addr[0], ni.LOCAL_IP)] > max_delay:
+			max_delay = adjacency_matrix[(addr[0], ni.LOCAL_IP)]
+	return max_delay
+	

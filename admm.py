@@ -38,7 +38,10 @@ def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
 	return np.random.random([DD])
 	
 def get_Yk(Xk, Yk_1, Zk):
-	return np.random.random([DD])
+	return Yk_1+RHO*(Xk-Zk)
 
 def get_Zk1(Xk1, Yk, active_worker, num_active_worker):
-	return np.random.random([DD])
+	sum_tmp = np.zeros([DD]) 
+	for addr in active_worker:
+		sum_tmp = sum_tmp + RHO*Xk1[addr] + Yk[addr]
+	return sum_tmp/(RHO*num_active_worker)

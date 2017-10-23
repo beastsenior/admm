@@ -30,11 +30,13 @@ old_active_worker = [] #list of active workers on last polling
 Xk1 = {}
 Yk = {}
 Zk = np.random.random([ad.DD])
-Zk1 = np.zeros([ad.DD])
+Zk1 = np.zeros([ad.DD]) 
 
 time.sleep(6)
 
 while True:
+	#get adjacency matrix of the network
+	adjacency_matrix = to.load_topology(conn, cursor)
 	#poll mask, get the list of active worker. 
 	active_worker, num_active_worker = to.get_active_worker(to.load_mask(conn, cursor))  
 	if num_active_worker == 0:
@@ -58,17 +60,20 @@ while True:
 		
 	num_r_msg = 0  #number of received massage (massage of Xk1 and Yk)
 	while True:
-		r_msg_tmp, addr = ser.recvfrom(ad.DD*2*Zk.itemsize) 
+		r_msg_tmp, addr = ser.recvfrom(ad.DD*2*Zk.itemsize) #(len(Xk1[])+len(Yk[]))*sizeof(double)
 		r_msg[addr] = r_msg_tmp
 		if addr in active_worker:
 			num_r_msg = num_r_msg + 1
 			print('A massage from', addr, '... (', num_r_msg, '/', num_active_worker, ')')
+			#when get all data to compute
 			if num_r_msg == num_active_worker:
+				net_delay = to.max_delay(adjacency_matrix, active_worker)
+				time.sleep(net_delay) #simulate network delay, before compute the data
+				print('network delay: ', net_delay)
 				for addr in active_worker:
-					Xk1_and_Yk_tmp = np.array(struct.unpack('%ud'%(ad.DD*2),r_msg[addr]))
+					Xk1_and_Yk_tmp = np.array(struct.unpack('%ud'%(ad.DD*2), r_msg[addr]))
 					Xk1[addr] = Xk1_and_Yk_tmp[:ad.DD]
 					Yk[addr] = Xk1_and_Yk_tmp[ad.DD:]
-					#print ('Receive:', '(Xk1, Yk)=', Xk1[addr], ',', Yk[addr], '<--', addr)
 					print('Receive: (Xk1, Yk) <--', addr)
 					print('Xk1[addr]=', Xk1[addr])
 					print('Yk[addr]=', Yk[addr])
@@ -79,7 +84,6 @@ while True:
 			num_err_r_msg = num_err_r_msg + 1
 			print (num_err_r_msg, ' EEEEEEEEEEEEEEEEEEEEEEEError_______________msg <- ', addr) 
 			time.sleep(5000)
-
 cursor.close()
 conn.close()
 ser.close()
