@@ -2,6 +2,7 @@
 import net_interface as ni
 import topology as to
 import admm as ad
+import numpy as np
 
 import socket
 import pymysql
@@ -28,10 +29,10 @@ old_active_worker = [] #list of active workers on last polling
 #compute Zk1
 Xk1 = {}
 Yk = {}
-Zk = random.random()
-Zk1 = 0
+Zk = np.random.random([ad.DD])
+Zk1 = np.zeros([ad.DD])
 
-time.sleep(10)
+time.sleep(6)
 
 while True:
 	#poll mask, get the list of active worker. 
@@ -45,33 +46,39 @@ while True:
 
 	#send PMD to nodes, which have left
 	for addr in list(set(old_active_worker).difference(set(active_worker))):	#list(set(active_worker).difference(set(active_worker_renew)) is (active_worker - active_worker_renew), to find which nodes have left
-		ser.sendto(to.PMD, addr)		
-		print('Send:', '---PMD---', to.PMD, '-->', addr)
+		ser.sendto(to.PMD, addr)		#send the PMD packet to workers to notice bridge leave
+		print('Send:', '---PMD---', to.PMD, '-->', addr) 
 	old_active_worker = active_worker
 	#send Zk to active worker
-	s_msg = struct.pack('d',Zk)
+	s_msg = struct.pack('%ud'%ad.DD,*Zk)
+	print('s_msg=', s_msg)
 	for addr in active_worker:
 		ser.sendto(s_msg, addr)
 		print ('Send:', 'Zk=', Zk, '-->', addr)
 		
 	num_r_msg = 0  #number of received massage (massage of Xk1 and Yk)
 	while True:
-		r_msg_tmp, addr = ser.recvfrom(1024) 
+		r_msg_tmp, addr = ser.recvfrom(ad.DD*2*Zk.itemsize) 
 		r_msg[addr] = r_msg_tmp
 		if addr in active_worker:
 			num_r_msg = num_r_msg + 1
 			print('A massage from', addr, '... (', num_r_msg, '/', num_active_worker, ')')
 			if num_r_msg == num_active_worker:
 				for addr in active_worker:
-					(Xk1[addr], Yk[addr]) = (struct.unpack('dd',r_msg[addr]))[0:2]	
-					print ('Receive:', '(Xk1, Yk)=', Xk1[addr], ',', Yk[addr], '<--', addr)
+					Xk1_and_Yk_tmp = np.array(struct.unpack('%ud'%(ad.DD*2),r_msg[addr]))
+					Xk1[addr] = Xk1_and_Yk_tmp[:ad.DD]
+					Yk[addr] = Xk1_and_Yk_tmp[ad.DD:]
+					#print ('Receive:', '(Xk1, Yk)=', Xk1[addr], ',', Yk[addr], '<--', addr)
+					print('Receive: (Xk1, Yk) <--', addr)
+					print('Xk1[addr]=', Xk1[addr])
+					print('Yk[addr]=', Yk[addr])
 				Zk1 = ad.get_Zk1(Xk1, Yk, active_worker, num_active_worker)
 				Zk = Zk1
 				break
 		else:
 			num_err_r_msg = num_err_r_msg + 1
 			print (num_err_r_msg, ' EEEEEEEEEEEEEEEEEEEEEEEError_______________msg <- ', addr) 
-			time.sleep(100)
+			time.sleep(5000)
 
 cursor.close()
 conn.close()

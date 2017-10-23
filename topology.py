@@ -1,6 +1,9 @@
 import net_interface as ni
+import admm as ad
+
 import struct
 import random
+
 
 #number of node
 # NN = 20
@@ -20,7 +23,7 @@ IPLIST = [\
 #max double number（本来应该是1.7976931348623157e+308，但有问题，不妨设为1.7976931348622e+308） 
 MAXDOUBLE = 1.7976931348622e+308
 #max double number in packed type
-PMD = struct.pack('d', MAXDOUBLE)
+PMD = struct.pack('%ud'%ad.DD, *([MAXDOUBLE]*ad.DD))
 #connetion rate of node pair
 CONNETION_RATE = 0.3
 
@@ -34,7 +37,7 @@ def rand_topology():
 			if tmp > (1-CONNETION_RATE):
 				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = tmp - CONNETION_RATE  #network delay between node pair
 			else:
-				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = MAXDOUBLE #when delay = MAXDOUBLE means delay = infinity
+				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = MAXDOUBLE #when delay = MAXDOUBLE means delay = infinity, also means no connection between IPLIST[i] and IPLIST[j]
 	return adjacency_matrix
 
 #save topology to file

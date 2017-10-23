@@ -6,25 +6,39 @@
 
 #本例计算min |2x-6|^2
 
+import numpy as np
 import struct
 
+#dimension of the data X,Y,Z
+DD = 5
 #value of RHO
 RHO = 0.000001
 
 #bridge compute Xk1, Yk and Zk1 
-def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
-	sum_Yk = 0.0
-	sum_Zk = 0.0
-	for addr in active_bridge:
-		sum_Yk = sum_Yk + Yk[addr]
-		sum_Zk = sum_Zk + Zk[addr]
-	return (12.0 + RHO*(sum_Zk-sum_Yk))/(4.0+RHO*num_active_bridge)
+# def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
+	# sum_Yk = 0.0
+	# sum_Zk = 0.0
+	# for addr in active_bridge:
+		# sum_Yk = sum_Yk + Yk[addr]
+		# sum_Zk = sum_Zk + Zk[addr]
+	# return (12.0 + RHO*(sum_Zk-sum_Yk))/(4.0+RHO*num_active_bridge)
 
-def get_Yk(Xk, Yk_1, Zk):
-	return Yk_1+RHO*(Xk-Zk)
+# def get_Yk(Xk, Yk_1, Zk):
+	# return Yk_1+RHO*(Xk-Zk)
 	
+# def get_Zk1(Xk1, Yk, active_worker, num_active_worker):
+	# sum_tmp = 0.0
+	# for addr in active_worker:
+		# sum_tmp = sum_tmp + RHO*Xk1[addr] + Yk[addr]
+	# return sum_tmp/(RHO*num_active_worker)
+
+#bridge compute Xk1, Yk and Zk1 
+
+def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
+	return np.random.random([DD])
+	
+def get_Yk(Xk, Yk_1, Zk):
+	return np.random.random([DD])
+
 def get_Zk1(Xk1, Yk, active_worker, num_active_worker):
-	sum_tmp = 0.0
-	for addr in active_worker:
-		sum_tmp = sum_tmp + RHO*Xk1[addr] + Yk[addr]
-	return sum_tmp/(RHO*num_active_worker)
+	return np.random.random([DD])
