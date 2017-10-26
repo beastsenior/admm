@@ -25,7 +25,7 @@ MAXDOUBLE = 1.7976931348622e+308
 #max double number in packed type
 PMD = struct.pack('%ud'%ad.DD, *([MAXDOUBLE]*ad.DD))
 #connetion rate of node pair
-CONNETION_RATE = 0.3
+CONNETION_RATE = 0.5
 
 #init a random delay network topology
 def rand_topology():
@@ -133,9 +133,8 @@ def get_active_bridge(adjacency_mask):
 #max delay of the active worker or bridge (this is for simulation of network delay, which depends on slowest active worker or bridge)
 def max_delay(adjacency_matrix, active_node):
 	max_delay = 0.0
-	for addr in active_node:
-		if adjacency_matrix[(addr[0], ni.LOCAL_IP)] > max_delay:
-			max_delay = adjacency_matrix[(addr[0], ni.LOCAL_IP)]
-	#return max_delay
-	return 0.0
+	# for addr in active_node:
+		# if adjacency_matrix[(addr[0], ni.LOCAL_IP)] > max_delay:
+			# max_delay = adjacency_matrix[(addr[0], ni.LOCAL_IP)]
+	return max_delay
 	

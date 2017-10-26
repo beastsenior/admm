@@ -55,11 +55,11 @@ def lasso_data_generator():
 	X_target = np.zeros(DD) 
 	# for i in random.sample(range(DD), int(POZ*DD)):
 		# X_target[i] = np.random.random()
-	X_target[3]=0.3
-	X_target[7]=0.7
-	X_target[19]=0.19
-	X_target[51]=0.51
-	X_target[77]=0.77
+	X_target[1]=0.1
+	X_target[2]=0.2
+	X_target[3]=-0.3
+	X_target[97]=-0.97
+	X_target[98]=0.98
 	A = np.random.normal(0.0, 0.1, (ND, DD))
 	b = np.dot(A, X_target)+np.random.normal(0.0, 0.01, ND)  #b=A*X_target+noise
 	return X_target, A, b

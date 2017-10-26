@@ -5,7 +5,7 @@ import pymysql
 conn = pymysql.connect(host='172.16.100.1', port=3306, user='nodes', passwd='172.nodes', db='admm')
 cursor = conn.cursor()
 
-#creat topology mask file with full mask
+#creat mask database with full mask
 tmp_mask = to.get_full_mask(to.load_topology(conn, cursor))
 for i in to.IPLIST:
 	for j in to.IPLIST:
