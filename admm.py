@@ -4,44 +4,64 @@
 #传感器论文中的变量：  S(k), S(k+1), V(k)[b], V(k-1)[b], SB(k), SB(k+1), C[200] （每个node的ρ参数都一样时，就直接用一个RHO了）
 #ADMM经典论文中的变量：Z(k), Z(k+1), Y(k)[b], Y(k-1)[b], X(k),  X(k+1),  ρ
 
-#本例计算min |2x-6|^2
+#use the scaled form. use Uk to instead Yk. (Yk=RHO*Uk)
+
+#本例计算lasso, min (1/2)*(||Ax-b||22)-LAMBDA*(|x|1)
 
 import numpy as np
 import struct
+import random
 
-#dimension of the data X,Y,Z
-DD = 5
+#dimension of the data, e.g. X_target,X,Y,Z...
+DD = 100
+#number of the data
+ND = 200
 #value of RHO
-RHO = 0.000001
+RHO = 500.0
+#value of LAMBDA (parameter of lasso)
+LAMBDA = 0.1
+#percent of the non-zero value of X target (lasso)
+POZ = 0.05
 
-#bridge compute Xk1, Yk and Zk1 
-# def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
-	# sum_Yk = 0.0
-	# sum_Zk = 0.0
-	# for addr in active_bridge:
-		# sum_Yk = sum_Yk + Yk[addr]
-		# sum_Zk = sum_Zk + Zk[addr]
-	# return (12.0 + RHO*(sum_Zk-sum_Yk))/(4.0+RHO*num_active_bridge)
+#soft thresholding operator for the computing of Zk in lasso, Page 32 in the paper of ADMM boyd
+def soft_thresholding(a,k):
+	magnitude = np.absolute(a)
+	with np.errstate(divide='ignore'):
+		thresholded = (1 - k/magnitude)
+		thresholded.clip(min=0, max=None, out=thresholded)
+		thresholded = a * thresholded
+	return thresholded
 
-# def get_Yk(Xk, Yk_1, Zk):
-	# return Yk_1+RHO*(Xk-Zk)
+#compute Xk1, Uk and Zk1. 
+def get_Xk1(A, b , Uk, Zk, active_bridge, num_active_bridge):
+	sum_tmp = np.zeros(DD) 
+	for addr in active_bridge:
+		sum_tmp = sum_tmp + Zk[addr] - Uk[addr]
+	return np.dot(np.linalg.inv(np.dot(A.T,A)+num_active_bridge*RHO*np.eye(DD)),(np.dot(A.T,b)+RHO*sum_tmp))
 	
-# def get_Zk1(Xk1, Yk, active_worker, num_active_worker):
-	# sum_tmp = 0.0
-	# for addr in active_worker:
-		# sum_tmp = sum_tmp + RHO*Xk1[addr] + Yk[addr]
-	# return sum_tmp/(RHO*num_active_worker)
+def get_Uk(Xk, Uk_1, Zk):
+	return Uk_1+Xk-Zk
 
-#bridge compute Xk1, Yk and Zk1 
-
-def get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge):
-	return np.random.random([DD])
-	
-def get_Yk(Xk, Yk_1, Zk):
-	return Yk_1+RHO*(Xk-Zk)
-
-def get_Zk1(Xk1, Yk, active_worker, num_active_worker):
-	sum_tmp = np.zeros([DD]) 
+def get_Zk1(Xk1_and_Uk, active_worker, num_active_worker):
+	sum_tmp = np.zeros(DD) 
 	for addr in active_worker:
-		sum_tmp = sum_tmp + RHO*Xk1[addr] + Yk[addr]
-	return sum_tmp/(RHO*num_active_worker)
+		sum_tmp = sum_tmp + Xk1_and_Uk[addr]
+	a = sum_tmp/num_active_worker
+	k = LAMBDA/(RHO*num_active_worker)
+	return soft_thresholding(a,k)
+	
+#generate X target and data A, b (lasso)
+def lasso_data_generator():
+	X_target = np.zeros(DD) 
+	# for i in random.sample(range(DD), int(POZ*DD)):
+		# X_target[i] = np.random.random()
+	X_target[3]=0.3
+	X_target[7]=0.7
+	X_target[19]=0.19
+	X_target[51]=0.51
+	X_target[77]=0.77
+	A = np.random.normal(0.0, 0.1, (ND, DD))
+	b = np.dot(A, X_target)+np.random.normal(0.0, 0.01, ND)  #b=A*X_target+noise
+	return X_target, A, b
+	
+	

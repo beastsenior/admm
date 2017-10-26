@@ -24,13 +24,14 @@ num_err_r_msg = 0  #number of error received massage
 num_active_worker = 0 #number of active neighbor worker. 
 old_active_worker = [] #list of active workers on last polling
 
-#receive Xk1 and Yk
+#receive Xk1 and Uk
 #own Zk
 #compute Zk1
 Xk1 = {}
-Yk = {}
-Zk = np.random.random([ad.DD])
-Zk1 = np.zeros([ad.DD]) 
+Uk = {}
+Xk1_and_Uk = {}  #Xk1+Uk
+Zk = np.random.random(ad.DD)
+Zk1 = np.zeros(ad.DD) 
 
 time.sleep(6)
 
@@ -58,9 +59,10 @@ while True:
 		ser.sendto(s_msg, addr)
 		print ('Send:', 'Zk=', Zk, '-->', addr)
 		
-	num_r_msg = 0  #number of received massage (massage of Xk1 and Yk)
+	num_r_msg = 0  #number of received massage (massage of Xk1 and Uk)
 	while True:
-		r_msg_tmp, addr = ser.recvfrom(ad.DD*2*Zk.itemsize) #(len(Xk1[])+len(Yk[]))*sizeof(double)
+		#r_msg_tmp, addr = ser.recvfrom(ad.DD*2*Zk.itemsize) #(len(Xk1[])+len(Uk[]))*sizeof(double)
+		r_msg_tmp, addr = ser.recvfrom(ad.DD*Zk.itemsize) #(len(Xk1[]+Uk[])*sizeof(double)
 		r_msg[addr] = r_msg_tmp
 		if addr in active_worker:
 			num_r_msg = num_r_msg + 1
@@ -71,13 +73,14 @@ while True:
 				time.sleep(net_delay) #simulate network delay, before compute the data
 				print('network delay: ', net_delay)
 				for addr in active_worker:
-					Xk1_and_Yk_tmp = np.array(struct.unpack('%ud'%(ad.DD*2), r_msg[addr]))
-					Xk1[addr] = Xk1_and_Yk_tmp[:ad.DD]
-					Yk[addr] = Xk1_and_Yk_tmp[ad.DD:]
-					print('Receive: (Xk1, Yk) <--', addr)
-					print('Xk1[addr]=', Xk1[addr])
-					print('Yk[addr]=', Yk[addr])
-				Zk1 = ad.get_Zk1(Xk1, Yk, active_worker, num_active_worker)
+					# Xk1_and_Uk_tmp = np.array(struct.unpack('%ud'%(ad.DD*2), r_msg[addr]))
+					# Xk1[addr] = Xk1_and_Uk_tmp[:ad.DD]
+					# Uk[addr] = Xk1_and_Uk_tmp[ad.DD:]
+					Xk1_and_Uk_tmp = np.array(struct.unpack('%ud'%ad.DD, r_msg[addr]))
+					Xk1_and_Uk[addr] = Xk1_and_Uk_tmp
+					print('Receive: (Xk1+Uk) <--', addr)
+					print('Xk1+Uk=', Xk1_and_Uk[addr])
+				Zk1 = ad.get_Zk1(Xk1_and_Uk, active_worker, num_active_worker)
 				Zk = Zk1
 				break
 		else:

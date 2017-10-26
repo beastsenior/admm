@@ -22,19 +22,26 @@ cursor = conn.cursor()
 r_msg={} #received massage
 num_r_msg = 0  #number of received massage
 
+#X target and data A, b
+X_target, A, b = ad.lasso_data_generator()
+
 #receive Zk
-#own Xk and Yk_1
-#compute Xk1 and Yk 
-Xk = np.random.random([ad.DD])
-Xk1 = np.zeros([ad.DD])
-Yk = {}
-Yk_1 = {}
+#own Xk and Uk_1
+#compute Xk1 and Uk 
+Xk = np.random.random(ad.DD)
+Xk1 = np.zeros(ad.DD)
+Uk = {}
+Uk_1 = {}
 Zk = {}  
 
 active_bridge = []
 num_active_bridge = 0
 
 while True:  
+	print('-----------------------X_target vs. Xk-----------------------')
+	print(X_target)
+	print(Xk)
+	print('-------------------------------------------------------------')
 	#get adjacency matrix of the network
 	adjacency_matrix = to.load_topology(conn, cursor)
 	print('\n')
@@ -48,16 +55,16 @@ while True:
 			time.sleep(5000)
 		print('---------------------bridge sleeps:', active_bridge, '-', addr) #addr bridge leave (sleep)
 		active_bridge.remove(addr)
-		Yk.pop(addr) 
-		Yk_1.pop(addr)
+		Uk.pop(addr) 
+		Uk_1.pop(addr)
 		num_active_bridge = num_active_bridge - 1
 	else:
 		r_msg[addr] = r_msg_tmp
 		if addr not in active_bridge:  #when new bridge join
 			print('+++++++++++++++++++birdge wakes:', active_bridge, '+', addr) #addr join as a new bridge (wake)
 			active_bridge.append(addr)
-			Yk[addr] = np.zeros([ad.DD])
-			Yk_1[addr] = np.random.random([ad.DD])
+			Uk[addr] = np.zeros(ad.DD)
+			Uk_1[addr] = np.random.random(ad.DD)
 			num_active_bridge = num_active_bridge + 1
 		num_r_msg = num_r_msg + 1
 		print('A massage from', addr, '... (', num_r_msg, '/', num_active_bridge, ')')
@@ -70,14 +77,14 @@ while True:
 			Zk[addr] = np.array(struct.unpack('%ud'%ad.DD, r_msg[addr]))
 			print('Receive: Zk <--', addr)
 			print('Zk[addr]=', Zk[addr])
-			Yk[addr] = ad.get_Yk(Xk, Yk_1[addr], Zk[addr])
-		Xk1 = ad.get_Xk1(Xk, Yk, Zk, active_bridge, num_active_bridge)
+			Uk[addr] = ad.get_Uk(Xk, Uk_1[addr], Zk[addr])
+		Xk1 = ad.get_Xk1(A, b, Uk, Zk, active_bridge, num_active_bridge)
 		for addr in active_bridge:
-			s_msg = struct.pack('%ud'%ad.DD*2,*Xk1,*(Yk[addr]))
+			s_msg = struct.pack('%ud'%ad.DD,*(Xk1+Uk[addr]))
 			ser.sendto(s_msg, addr)
-			print ('Send:', '(Xk1, Yk)=', Xk1, ',', Yk[addr], '-->', addr)
+			print ('Send:', '(Xk1+Uk)=', Xk1, '+', Uk[addr], '-->', addr)
 		Xk=Xk1
-		Yk_1=Yk.copy()
+		Uk_1=Uk.copy()
 		num_r_msg = 0
 cursor.close()
 conn.close()

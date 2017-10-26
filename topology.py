@@ -34,8 +34,8 @@ def rand_topology():
 		adjacency_matrix[(IPLIST[i], IPLIST[i])] = 0.0  #the delay between node and itself is 0
 		for j in range(i):
 			tmp = random.random()
-			if tmp > (1-CONNETION_RATE):
-				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = tmp - CONNETION_RATE  #network delay between node pair
+			if tmp < CONNETION_RATE:
+				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = random.random()  #network delay between node pair
 			else:
 				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = MAXDOUBLE #when delay = MAXDOUBLE means delay = infinity, also means no connection between IPLIST[i] and IPLIST[j]
 	return adjacency_matrix
@@ -136,5 +136,6 @@ def max_delay(adjacency_matrix, active_node):
 	for addr in active_node:
 		if adjacency_matrix[(addr[0], ni.LOCAL_IP)] > max_delay:
 			max_delay = adjacency_matrix[(addr[0], ni.LOCAL_IP)]
-	return max_delay
+	#return max_delay
+	return 0.0
 	
