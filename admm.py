@@ -33,11 +33,11 @@ def soft_thresholding(a,k):
 	return thresholded
 
 #compute Xk1, Uk and Zk1. 
-def get_Xk1(A, b , Uk, Zk, active_bridge, num_active_bridge):
+def get_Xk1(A, b , Uk, Zk, received_active_bridge, num_received_active_bridge):
 	sum_tmp = np.zeros(DD) 
-	for addr in active_bridge:
+	for addr in received_active_bridge:
 		sum_tmp = sum_tmp + Zk[addr] - Uk[addr]
-	return np.dot(np.linalg.inv(np.dot(A.T,A)+num_active_bridge*RHO*np.eye(DD)),(np.dot(A.T,b)+RHO*sum_tmp))
+	return np.dot(np.linalg.inv(np.dot(A.T,A)+num_received_active_bridge*RHO*np.eye(DD)),(np.dot(A.T,b)+RHO*sum_tmp))
 	
 def get_Uk(Xk, Uk_1, Zk):
 	return Uk_1+Xk-Zk

@@ -7,7 +7,7 @@ import random
 
 #number of node
 # NN = 20
-NN = 10
+NN = 16
 #node ip list
 # IPLIST = [\
 # '172.16.100.2',  '172.16.100.3',  '172.16.100.4',  '172.16.100.5',  '172.16.100.6',  \
@@ -18,6 +18,8 @@ NN = 10
 IPLIST = [\
 '172.16.100.2',  '172.16.100.3',  '172.16.100.4',  '172.16.100.5',  '172.16.100.6',  \
 '172.16.100.7',  '172.16.100.8',  '172.16.100.9',  '172.16.100.10', '172.16.100.11', \
+'172.16.100.12', '172.16.100.13', '172.16.100.14', '172.16.100.15', '172.16.100.16', \
+'172.16.100.17'
 ]
 
 #max double number（本来应该是1.7976931348623157e+308，但有问题，不妨设为1.7976931348622e+308） 
@@ -25,7 +27,7 @@ MAXDOUBLE = 1.7976931348622e+308
 #max double number in packed type
 PMD = struct.pack('%ud'%ad.DD, *([MAXDOUBLE]*ad.DD))
 #connetion rate of node pair
-CONNETION_RATE = 0.5
+CONNETION_RATE = 0.2
 
 #init a random delay network topology
 def rand_topology():
@@ -39,6 +41,33 @@ def rand_topology():
 			else:
 				adjacency_matrix[(IPLIST[i], IPLIST[j])] = adjacency_matrix[(IPLIST[j], IPLIST[i])] = MAXDOUBLE #when delay = MAXDOUBLE means delay = infinity, also means no connection between IPLIST[i] and IPLIST[j]
 	return adjacency_matrix
+
+#BFS(Breadth First Search) for graph
+def graph_bfs(adjacency_matrix):
+	visited_node = {}
+	for ip in IPLIST:
+		visited_node[ip] = False
+	checking_list=[IPLIST[0]]
+	visited_node[IPLIST[0]] = True
+	number_of_visited_node = 1
+
+	while len(checking_list)!=0:
+		checking_node = checking_list.pop()
+		for ip in IPLIST:
+			if visited_node[ip]==False and adjacency_matrix[(checking_node, ip)]<MAXDOUBLE:
+				checking_list.append(ip)
+				visited_node[ip] = True
+				number_of_visited_node = number_of_visited_node + 1
+	return number_of_visited_node
+		
+#if the graph is a connected graph, return True, else return False 
+def is_connected(adjacency_matrix, number_of_node):
+	number_of_visited_node = graph_bfs(adjacency_matrix)
+	print('number_of_visited_node=', number_of_visited_node)
+	if number_of_node == number_of_visited_node:
+		return True
+	else:
+		return False
 
 #save topology to file
 def save_topology(adjacency_matrix, conn, cursor):
