@@ -1,4 +1,6 @@
-import networkx as nx
+# import matplotlib.pyplot as plt
+import tkinter
+import matplotlib.pyplot as plt
 
-g=nx.G()
-print(g)
+plt.bar(left = (0,1),height = (1,0.5),width = 0.35)
+plt.show()
