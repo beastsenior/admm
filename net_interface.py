@@ -1,9 +1,7 @@
 import netifaces
+import socket
 
 import globle as g
-
-#local ip
-LOCAL_IP = get_local_ip('eth1')
 
 #get host ip address
 def get_local_ip(interface_name): 
@@ -20,7 +18,12 @@ def init_socket(role):
 		local_addr = (LOCAL_IP, g.WPORT)  
 		ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		ser.bind(local_addr)
+	elif role == 'admin':
+		ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	else:
 		print('Error: wrong role.')
 		input()
 	return ser
+
+#local ip
+LOCAL_IP = get_local_ip('eth1')

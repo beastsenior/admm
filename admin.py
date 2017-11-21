@@ -3,11 +3,13 @@ import globle as g
 import admm as ad
 import topology as tp
 
-tp.topology()
-for problem in g.L_PROBLEM:
-	data.data(problem)
-	for mode in g.L_MODE:
-		ad.admm(problem, mode)
-	ad.result(problem)
+tp.init_topology()
+data.init_data('Lasso')
+for mode_i in range(len(g.L_MODE)):
+	tp.topology(mode_i)
+	data.data(mode_i)
+	ad.admm(mode_i)
+	ad.get_min(mode_i)
+ad.result('Lasso')
 
 	

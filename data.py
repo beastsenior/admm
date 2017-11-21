@@ -5,10 +5,8 @@ import globle as g
 import database as db
 
 #create data and save data to database
-def data(problem):
-	
-	#lasso
-	if problem == 'L':   
+def init_data(problem):
+	if problem == 'Lasso':
 		#create
 		x0 = np.zeros([g.DD,1])
 		num_non_zeros = int(g.PNZ * g.DD)
@@ -18,7 +16,7 @@ def data(problem):
 			x0[i] = np.random.random()
 		A = np.random.normal(0.0, 1.0, [g.NW*g.ND, g.DD])
 		b = A.dot(x0) + np.random.normal(0.0, 0.01, [g.NW*g.ND,1])
-		#b = A.dot(x)
+		#b = A.dot(x0)
 		
 		#compute theta*|x0|_1
 		NORMx0 = g.THETA * np.linalg.norm(x0, ord=1)
@@ -28,8 +26,24 @@ def data(problem):
 		prob = cvx.Problem(objective)
 		CVXmin = prob.solve()
 		
-		#save to database
+		#save A and b to database
 		db.save({'NORMx0':NORMx0,'CVXmin':CVXmin,'x0':x0,'A':A,'b':b})
-
 		print('Create data...done!')
-		print('Non zeros positions in x0:',positions,'\n')
+		print('Non zeros data in x0: ')
+		for i in positions:
+			print('x0[%d]=%f'%(i,x0[i]), end=' ')
+		print('\n')
+
+def data(mode_i):
+	if g.L_MODE[mode_i][0] == 'Lasso':
+		if g.L_MODE[mode_i][1] == 'SingleADMM':
+			A, b = db.load(['A','b'])
+			db.save({'A':A,'b':b},mode_i)
+
+		if g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':			
+			A, b = db.load(['A','b'])
+			#save distributed A and b to database
+			i = 0
+			for ip in g.L_IP:
+				db.save({'A':A.reshape([g.NW, g.ND, g.DD])[i], 'b':b.reshape([g.NW, g.ND, 1])[i]}, mode_i, ip=ip)
+				i+=1
