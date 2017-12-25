@@ -14,8 +14,8 @@ def init_data(problem):
 		for i in positions:
 			#x[i] = np.random.random()* (1.0e+7)
 			x0[i] = np.random.random()
-		A = np.random.normal(0.0, 1.0, [g.NW*g.ND, g.DD])
-		b = A.dot(x0) + np.random.normal(0.0, 0.01, [g.NW*g.ND,1])
+		A = np.random.normal(0.0, 1.0, [g.NN*g.ND, g.DD])
+		b = A.dot(x0) + np.random.normal(0.0, 0.01, [g.NN*g.ND,1])
 		#b = A.dot(x0)
 		
 		#compute theta*|x0|_1
@@ -28,11 +28,11 @@ def init_data(problem):
 		
 		#save A and b to database
 		db.save({'NORMx0':NORMx0,'CVXmin':CVXmin,'x0':x0,'A':A,'b':b})
-		print('Create data...done!')
+
 		print('Non zeros data in x0: ')
 		for i in positions:
 			print('x0[%d]=%f'%(i,x0[i]), end=' ')
-		print('\n')
+	print('Init data...done! (%s)'%(problem))
 
 def data(mode_i):
 	if g.L_MODE[mode_i][0] == 'Lasso':
@@ -40,10 +40,12 @@ def data(mode_i):
 			A, b = db.load(['A','b'])
 			db.save({'A':A,'b':b},mode_i)
 
-		if g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':			
+		elif g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':			
 			A, b = db.load(['A','b'])
+			Ar=A.reshape([g.NN, g.ND, g.DD])
+			br=b.reshape([g.NN, g.ND, 1])
 			#save distributed A and b to database
 			i = 0
 			for ip in g.L_IP:
-				db.save({'A':A.reshape([g.NW, g.ND, g.DD])[i], 'b':b.reshape([g.NW, g.ND, 1])[i]}, mode_i, ip=ip)
+				db.save({'A':Ar[i], 'b':br[i]}, mode_i, ip)
 				i+=1

@@ -10,7 +10,11 @@ def get_local_ip(interface_name):
 
 #init socket
 def init_socket(role):
-	if role == 'bridge':
+	if role == 'admin':
+		local_addr = (LOCAL_IP, g.APORT) 	
+		ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		ser.bind(local_addr)
+	elif role == 'bridge':
 		local_addr = (LOCAL_IP, g.BPORT)  
 		ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		ser.bind(local_addr)
@@ -18,10 +22,8 @@ def init_socket(role):
 		local_addr = (LOCAL_IP, g.WPORT)  
 		ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		ser.bind(local_addr)
-	elif role == 'admin':
-		ser = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	else:
-		print('Error: wrong role.')
+		print('Error: wrong socket role.')
 		input()
 	return ser
 
