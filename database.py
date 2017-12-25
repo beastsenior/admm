@@ -1,14 +1,8 @@
-#import pymysql
 import networkx as nx
 import numpy as np
 
 import globle as g
 
-#try:
-	#connect to mysql database
-	# conn = pymysql.connect(host=g.IP_ADMIN, port=3306, user='nodes', passwd='172.nodes', db='admm')
-	# cursor = conn.cursor()
-	
 def save(d_data, mode_i=-1, ip=g.IP_ADMIN, problem='Lasso'):
 	for name in d_data:
 		file_name = g.DATA_DIR+str(name)+'_'+str(mode_i)+'_'+ip+'_'+problem
@@ -26,7 +20,3 @@ def load(l_data, mode_i=-1, ip=g.IP_ADMIN, problem='Lasso'):
 		else:
 			l_return.append(np.load(file_name+'.npy'))
 	return l_return
-	
-#finally:
-	# cursor.close()
-	# conn.close()

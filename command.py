@@ -34,9 +34,9 @@ def start_bridge(l_bridge):
 	ser = ni.init_socket('admin')
 	for ip in l_bridge:
 		ser.sendto(np.int8(g.D_COMMAND['bridge start']).tostring(),(ip,g.BPORT))
-	print('All bridges start.')
+	print('All bridges start. ADMM is running...')
 	l_ready_ip = []
-	while(set(l_ready_ip)!=set(l_bridge)):  #+++++++++++++++++++++++++++++
+	while(set(l_ready_ip)!=set(l_bridge)):  
 		r_msg, addr = ser.recvfrom(g.BUFSIZE)
 		r_command = int(np.fromstring(r_msg,dtype=np.int8))
 		if r_command == g.D_COMMAND['bridge ready']:

@@ -9,6 +9,7 @@ import admm as ad
 import topology as tp
 import environment as env
 
+print('\n\n')
 env.init_environment('node')
 pid = os.fork()
 
@@ -61,7 +62,7 @@ if pid==0:
 				if g.L_MODE[mode_i][0] == 'Lasso':			
 					for ip in l_ow:
 						ser.sendto(z.tostring(),(ip, g.WPORT))
-					print('Bridge: mode_i=%d (%s): start...'%(mode_i,str(g.L_MODE[mode_i])))
+					print('Bridge: mode_i=%d (%s): ADMM is running...'%(mode_i,str(g.L_MODE[mode_i])))
 				else:
 					print('Bridge: Error: unknow problem.')	
 					input()	
@@ -76,20 +77,16 @@ if pid==0:
 							xu[addr[0]] = np.fromstring(r_msg,dtype=z.dtype).reshape([2,g.DD,1])  
 							l_row.append(addr[0])
 							nrow+=1
-							# print('+++Bridge:',k,':',ni.LOCAL_IP,'<--xu--',addr[0])
-							# print('+++Bridge: l_row=',l_row)
-							# print('+++Bridge: l_ow=',l_ow)
 							if nrow == now:
 								z = ad.get_z(xu, l_row, nrow)
 								Lmin[k] = ad.get_Lmin(xu,z,A,b,l_row)
-								t[k] = time.time()		
-								if k < g.ITER-1:								
+								t[k] = time.time()	
+								k+=1
+								if k < g.ITER:								
 									for ip in l_row:
 										ser.sendto(z.tostring(),(ip, g.WPORT))	
-										# print('+++Bridge:',k,':',ni.LOCAL_IP,'--z-->',ip)
-										l_row = [] 
-										nrow = 0
-										k+=1
+									l_row = [] 
+									nrow = 0
 								else:
 									db.save({'Lmin':Lmin,'t':t},mode_i,ni.LOCAL_IP) #save to basedata	
 									ser.close()
@@ -132,7 +129,7 @@ else:
 						A, b = db.load(['A','b'], mode_i, ip=ni.LOCAL_IP)
 						AtA = A.T.dot(A)
 						Atb = A.T.dot(b)
-						Q = AtA + g.RHO * np.identity(g.DD)
+						Q = AtA + nob * g.RHO * np.identity(g.DD)
 						Q = np.linalg.inv(Q)						
 						x = np.zeros([g.DD,1])
 						u = {}
@@ -166,19 +163,14 @@ else:
 						if g.L_MODE[mode_i][3] == g.L_TAU[0]:  #tau=1, synchronous
 							z[addr[0]] = np.fromstring(r_msg,dtype=x.dtype).reshape([g.DD,1])
 							l_rob.append(addr[0])
-							nrob+=1
-							# print('+++Worker:',k,':',ni.LOCAL_IP,'<--z--',addr[0])
-							# print('+++Worker: l_rob=',l_rob)
-							# print('+++Worker: l_ob=',l_ob)							
+							nrob += 1
 							if nrob == nob:
-								x,u,xu= ad.get_xu(u,x,z,l_rob,Q,Atb)
+								x,u,xu = ad.get_xu(x,u,z,l_rob,Q,Atb)
 								for ip in l_rob:
 									ser.sendto(xu[ip].tostring(),(ip, g.BPORT))	
-									# print('+++Worker:',k,':',ni.LOCAL_IP,'--xu-->',ip)
-								i=0
 								l_rob = [] 
 								nrob = 0
-								k+=1
+								k += 1
 								if k == g.ITER:
 									ser.close()
 									ser = ni.init_socket('worker') 

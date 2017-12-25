@@ -17,10 +17,10 @@ for mode_i in range(len(g.L_MODE)):
 	tp.topology(mode_i)
 	data.data(mode_i)
 	ad.admm(mode_i)
-	#ad.get_min(mode_i)
 	
 	end_time=time.time()
 	print('mode_i=%d (%s): done! (%f s)'%(mode_i,str(g.L_MODE[mode_i]),end_time-start_time))
+	#input('press Enter to continue...')
 result.result('Lasso')
 
 	

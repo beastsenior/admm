@@ -9,7 +9,7 @@ def init_data(problem):
 	if problem == 'Lasso':
 		#create
 		x0 = np.zeros([g.DD,1])
-		num_non_zeros = int(g.PNZ * g.DD)
+		num_non_zeros = int(g.PNZ * g.DD)   
 		positions = np.random.randint(0, g.DD, num_non_zeros)
 		for i in positions:
 			#x[i] = np.random.random()* (1.0e+7)
@@ -31,7 +31,7 @@ def init_data(problem):
 
 		print('Non zeros data in x0: ')
 		for i in positions:
-			print('x0[%d]=%f'%(i,x0[i]), end=' ')
+			print('x0[%d]=%f'%(i,x0[i]))
 	print('Init data...done! (%s)'%(problem))
 
 def data(mode_i):

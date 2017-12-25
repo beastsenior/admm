@@ -9,7 +9,6 @@ def init_environment(role):
 		pid=pida.read()
 		if len(pid) > 0: 
 			os.popen('kill ' + pid)
-			#print('kill ' + pid)		
 		if os.path.isdir(g.DATA_DIR)!=True:
 			os.mkdir(g.DATA_DIR)
 		else:
@@ -21,7 +20,6 @@ def init_environment(role):
 		pid=pidb.read()+' '+pidw.read()
 		if len(pid) > 1: 
 			os.popen('kill ' + pid)
-			#print('kill ' + pid)
 	else:
 		print('Error: wrong environment role.')
 		input()		

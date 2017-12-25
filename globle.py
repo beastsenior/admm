@@ -2,8 +2,8 @@ import numpy as np
 
 #random seed
 #SEED = 1
-SEED = np.random.randint(5)
-np.random.seed(SEED)
+# SEED = np.random.randint(50)
+# np.random.seed(SEED)
 
 #network interface parameter
 APORT=31500  #port of admin
@@ -13,7 +13,7 @@ BUFSIZE = 2000 #recvfrom(bufsize)
 
 #ip list. (admin ip is 172.16.100.1, which is not in the list)
 L_IP = [\
-'172.16.100.2',  '172.16.100.3',  '172.16.100.4',  '172.16.100.5',  '172.16.100.6',  \
+'172.16.100.2',  '172.16.100.3',  '172.16.100.4',  '172.16.100.5',  '172.16.100.18',  \
 '172.16.100.7',  '172.16.100.8',  '172.16.100.9',  '172.16.100.10', '172.16.100.11', \
 '172.16.100.12', '172.16.100.13', '172.16.100.14', '172.16.100.15', '172.16.100.16', \
 '172.16.100.17']
@@ -26,10 +26,10 @@ def ipdict():  #iplist to ipdict
 D_IP = ipdict()  
 
 #topology parameter
-POC = 0.5 #probability of connection between two nodes
+POC = 0.3667 #probability of connection between two nodes
 
 #admm parameter
-ITER = 100
+ITER = 200
 THETA = 0.1
 RHO = 500.0
 DD = 100  #dimension of data

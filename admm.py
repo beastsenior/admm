@@ -50,10 +50,12 @@ def admm(mode_i):
 			c.init_worker(l_worker,mode_i)
 			c.start_bridge(l_bridge)
 			all_Lmin = np.zeros([g.ITER])
+			d_Lmin = {}
 			for ip in l_bridge:
-				Lmin[ip], = db.load(['Lmin'],mode_i,ip)
-				all_Lmin = all_Lmin + Lmin[ip]
-			db.save({'Lmin':all_Lmin},mode_i)
+				d_Lmin[ip], = db.load(['Lmin'],mode_i,ip)
+				all_Lmin = all_Lmin + d_Lmin[ip]
+			mean_Lmin = all_Lmin/len(l_bridge)
+			db.save({'Lmin':mean_Lmin},mode_i)
 		
 		else:
 			print('Error: out of L_MODE.')
@@ -63,50 +65,9 @@ def admm(mode_i):
 def get_Lmin(xu,z,A,b,l_row):
 	L = 0.0
 	for ip in l_row:
-		L = L + 0.5*(np.array((np.square(np.dot(A[ip], xu[ip][0])-b[ip]))).sum()) + g.RHO*np.dot(xu[ip][1],(xu[ip][0]-z))+0.5*g.RHO*(np.array((np.square(xu[ip][0]-z))).sum())
+		L = L + 0.5*(np.array((np.square(np.dot(A[ip], xu[ip][0])-b[ip]))).sum()) + g.RHO*np.dot(xu[ip][1].T,(xu[ip][0]-z))+0.5*g.RHO*(np.array((np.square(xu[ip][0]-z))).sum())
 	L = L + g.THETA*np.linalg.norm(z,ord = 1)
 	return L
-
-# def get_min(mode_i):
-	# ac = np.zeros([g.ITER])  ++++++++++++++++
-	# if g.L_MODE[mode_i][0] == 'Lasso':
-		# CVXmin = db.load(['CVXmin'])
-		# LLPmin = np.zeros([g.ITER])
-		# LLPac = np.zeros([g.ITER])
-		# if g.L_MODE[mode_i][1] == 'SingleADMM':
-			# A, b, u, x, z = db.load(['A','b','u','x','z'],mode_i)
-			# for k in range(g.ITER):
-				# LLPmin[k]=0.5*np.square(np.dot(A,x[k])-b).sum()+g.RHO*np.dot(u[k].T,(x[k]-z[k]))+0.5*g.RHO*(np.square(x[k]-z[k]).sum())+g.THETA*np.linalg.norm(z[k], ord=1)
-				# LLPac[k]=abs(LLPmin[k]-CVXmin)/CVXmin
-		# elif g.L_MODE[mode_i][1] == 'StarADMM':
-			# A,b,u,x,z={},{},{},{},{}
-			# G, = db.load(['G'],mode_i)
-			# l_bridge, l_worker = tp.get_bridges_workers(G)
-			# for ip in l_worker:
-				# A[ip], b[ip], u[ip], x[ip]= db.load(['A','b','u','x'],mode_i,ip)
-			# for ip in l_bridge:
-				# z[ip],= db.load(['z'],mode_i,ip)
-			# for k in range(g.ITER):
-				# all_L = 0.0
-				# i = 0
-				# for b_ip in l_bridge:
-					# l_worker = tp.get_ow(G,ip)
-					# L = 0.0
-					# for w_ip in l_worker:
-						# L = L + 0.5*(np.array((np.square(np.dot(A[w_ip][k], x[w_ip][k])-b[w_ip][k]))).sum()) + g.RHO*np.dot(u[w_ip][k][i],(x[w_ip][k]-z[b_ip][k]))+0.5*g.RHO*(np.array((np.square(x[w_ip][k]-z[b_ip][k]))).sum())
-						# L = L + g.LAMBDA*np.linalg.norm(z[b_ip][k],ord = 1)	
-					# i += 1
-					# all_L += L
-					
-				# LLPmin[k]=all_L
-				# LLPac[k]=abs(LLPmin[k]-CVXmin)/CVXmin
-
-			
-		# elif g.L_MODE[mode_i][1] == 'BridgeADMM':
-			# LLPmin=[1,2,3]
-			# LLPac=[0.1,0.2,0.3]	
-		
-		# db.save({'LLPmin':LLPmin,'LLPac':LLPac},mode_i)
 			
 def get_z(xu, l_row, nrow):
 	sum = np.zeros([g.DD,1]) 
@@ -117,12 +78,13 @@ def get_z(xu, l_row, nrow):
 	return sthresh(a,k)	
 	
 def get_xu(x,u,z,l_rob,Q,Atb):
-	xu = np.zeros([2,g.DD,1])
 	sum = np.zeros([g.DD,1])
 	for ip in l_rob:
-		u[ip]=u[ip]+x-z[ip]
+		u[ip] = u[ip] + x - z[ip]
 		sum = sum + z[ip] - u[ip]
 	x = Q.dot(Atb + g.RHO * sum)
-	xu = [x, u[ip]]
+	xu = {}
+	for ip in l_rob:
+		xu[ip]=np.array([x,u[ip]])
 	return x,u,xu
 
