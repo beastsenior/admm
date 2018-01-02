@@ -23,7 +23,17 @@ def admm(mode_i):
 			t = np.zeros([g.ITER]) 
 			Lmin = np.zeros([g.ITER])  
 
-			A, b = db.load(['A','b'],mode_i)
+			all_A, all_b = db.load(['A','b'],mode_i)
+			if g.L_MODE[mode_i][2] == 'all_batch':
+				A = all_A
+				b = all_b
+			elif g.L_MODE[mode_i][2] == 'one_batch':
+				A = (all_A.reshape([g.NN, g.ND, g.DD]))[0]
+				b = (all_b.reshape([g.NN, g.ND, 1]))[0]
+			else:
+				print('Error: out of SingleADMM mode.')
+				input()
+			
 			#compute
 			AtA = A.T.dot(A)
 			Atb = A.T.dot(b)

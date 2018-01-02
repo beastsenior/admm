@@ -48,7 +48,8 @@ L_TAU = [1,3,10,50]
 # ['Lasso','BridgeADMM','complete',L_TAU[0]],\
 # ]
 L_MODE = [\
-['Lasso','SingleADMM'],\
+['Lasso','SingleADMM','all_batch'],\
+['Lasso','SingleADMM','one_batch'],\
 ['Lasso','StarADMM','random',L_TAU[0]],\
 ['Lasso','BridgeADMM','complete',L_TAU[0]],\
 ]

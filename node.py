@@ -9,7 +9,7 @@ import admm as ad
 import topology as tp
 import environment as env
 
-print('\n\n')
+print('\n')
 env.init_environment('node')
 pid = os.fork()
 
