@@ -21,8 +21,8 @@ def init_data(problem):
 		#compute theta*|x0|_1
 		NORMx0 = g.THETA * np.linalg.norm(x0, ord=1)
 		#compute min by cvx
-		w = cvx.Variable(g.DD)
-		objective = cvx.Minimize(0.5*cvx.sum_squares(A*w - b)+ g.THETA*cvx.norm(w,1))
+		w = cvx.Variable([g.DD,1])
+		objective = cvx.Minimize(0.5*cvx.sum_squares(A@w - b)+ g.THETA*cvx.norm(w,1))
 		prob = cvx.Problem(objective)
 		CVXmin = prob.solve()
 		
