@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -v on
-git update-index --skip-worktree ./data/*
+git update-index --skip-worktree data/
 git add -A
 git commit -m $(date "+%Y%m%d")_$(date "+%H%M%S")
 
