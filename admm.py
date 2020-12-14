@@ -47,7 +47,9 @@ def admm(mode_i):
 				z = sthresh(x + u, g.THETA / g.RHO)
 
 				Lmin[k]=0.5*np.square(np.dot(A,x)-b).sum()+g.RHO*np.dot(u.T,(x-z))+0.5*g.RHO*(np.square(x-z).sum())+g.THETA*np.linalg.norm(z, ord=1)
-				t[k] = time.time()
+				if k == 0:
+					t0 = time.time()  #start time
+				t[k] = time.time() - t0
 				k += 1
 			#save
 			db.save({'t':t,'Lmin':Lmin},mode_i)
@@ -60,12 +62,17 @@ def admm(mode_i):
 			c.init_worker(l_worker,mode_i)
 			c.start_bridge(l_bridge)
 			all_Lmin = np.zeros([g.ITER])
+			all_t = np.zeros([g.ITER])
 			d_Lmin = {}
+			d_t = {}
 			for ip in l_bridge:
-				d_Lmin[ip], = db.load(['Lmin'],mode_i,ip)
+				d_Lmin[ip], d_t[ip] = db.load(['Lmin','t'],mode_i,ip)
 				all_Lmin = all_Lmin + d_Lmin[ip]
+				all_t = all_t + d_t[ip]
 			mean_Lmin = all_Lmin/len(l_bridge)
-			db.save({'Lmin':mean_Lmin},mode_i)
+			mean_t = all_t/len(l_bridge)
+			
+			db.save({'Lmin':mean_Lmin,'t':mean_t},mode_i)
 		
 		else:
 			print('Error: out of L_MODE.')

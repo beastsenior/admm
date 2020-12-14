@@ -51,7 +51,7 @@ if pid==0:
 				ser = ni.init_socket('bridge') 					
 				ser.sendto(np.int8(g.D_COMMAND['bridge ready']).tostring(),addr)  
 				print('Bridge: mode_i=%d (%s): Init completed.'%(mode_i,str(g.L_MODE[mode_i])))
-				print('+++Bridge: worker list:',l_ow)
+				#print('+++Bridge: worker list:',l_ow)
 			elif r_command == g.D_COMMAND['bridge reset']:
 				mode_i = -1
 				ser.close()	
@@ -80,7 +80,9 @@ if pid==0:
 							if nrow == now:
 								z = ad.get_z(xu, l_row, nrow)
 								Lmin[k] = ad.get_Lmin(xu,z,A,b,l_row)
-								t[k] = time.time()	
+								if k == 0:
+									t0 = time.time()
+								t[k] = time.time() - t0
 								k+=1
 								if k < g.ITER:								
 									for ip in l_row:
@@ -141,7 +143,7 @@ else:
 				ser = ni.init_socket('worker')
 				ser.sendto(np.int8(g.D_COMMAND['worker ready']).tostring(),addr)  
 				print('Worker: mode_i=%d (%s): Init completed.'%(mode_i,str(g.L_MODE[mode_i])))
-				print('+++Worker: bridge list:',l_ob)
+				#print('+++Worker: bridge list:',l_ob)
 			elif r_command == g.D_COMMAND['worker reset']:
 				mode_i = -1
 				l_ob = [] 
