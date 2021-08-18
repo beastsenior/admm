@@ -21,7 +21,8 @@ def init_environment(role):
 		pidw=os.popen("netstat -nlp | grep 666 | awk '{print $6}' | awk -F'/' '{ print $1 }'")
 		#pidb=pidb.replace('\n','').replace('\r','').replace(' ','')
 		#pidw=pidb.replace('\n','').replace('\r','').replace(' ','')
-		pid=str(pidb.read()+' '+pidw.read()).replace('\n',' ').replace('\r',' ')
+		#pid=str(pidb.read()+' '+pidw.read()).replace('\n',' ').replace('\r',' ')
+		pid=str(pidb.read()+pidw.read()).replace('\n',' ').replace('\r',' ')
 		if len(pid) > 1: 
 			#os.popen('kill ' + pid)
 			print('PID: (%s) has killed.'%pid)
