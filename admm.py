@@ -12,8 +12,8 @@ def sthresh(a, k):
 
 def admm(mode_i):
 	G, = db.load(['G'],mode_i)
-	if g.L_MODE[mode_i][0] == 'Lasso':
-		if g.L_MODE[mode_i][1] == 'SingleADMM':
+	if g.L_MODE[mode_i][1] == 'Lasso':
+		if g.L_MODE[mode_i][2] == 'SingleADMM':
 			#u,x,z
 			u = np.zeros([g.DD, 1])
 			x = np.zeros([g.DD, 1])
@@ -24,10 +24,10 @@ def admm(mode_i):
 			Lmin = np.zeros([g.ITER])  
 
 			all_A, all_b = db.load(['A','b'],mode_i)
-			if g.L_MODE[mode_i][2] == 'all_batch':
+			if g.L_MODE[mode_i][3] == 'all_batch':
 				A = all_A
 				b = all_b
-			elif g.L_MODE[mode_i][2] == 'one_batch':
+			elif g.L_MODE[mode_i][3] == 'one_batch':
 				A = (all_A.reshape([g.NN, g.ND, g.DD]))[0]
 				b = (all_b.reshape([g.NN, g.ND, 1]))[0]
 			else:
@@ -54,7 +54,7 @@ def admm(mode_i):
 			#save
 			db.save({'t':t,'Lmin':Lmin},mode_i)
 			
-		elif g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':
+		elif g.L_MODE[mode_i][2] == 'StarADMM' or g.L_MODE[mode_i][2] == 'BridgeADMM':
 			#get bridges and workers
 			l_bridge, l_worker = tp.get_bridges_workers(G)
 			#send command to bridges and workers

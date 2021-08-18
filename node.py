@@ -34,7 +34,7 @@ if pid==0:
 				nrow = 0 #number of received own workers
 				k = 0 
 				#3.setup data
-				if g.L_MODE[mode_i][0] == 'Lasso':
+				if g.L_MODE[mode_i][1] == 'Lasso':
 					z = np.zeros([g.DD,1])   
 					xu = {} #x=xu[ip][0],u=xu[ip][1]
 					Lmin = np.zeros([g.ITER]) #Lagrangian funtion
@@ -59,7 +59,7 @@ if pid==0:
 				ser.sendto(np.int8(g.D_COMMAND['bridge ready']).tostring(),addr)  
 				print('Bridge: bridge reset.')	
 			elif r_command == g.D_COMMAND['bridge start']:
-				if g.L_MODE[mode_i][0] == 'Lasso':			
+				if g.L_MODE[mode_i][1] == 'Lasso':			
 					for ip in l_ow:
 						ser.sendto(z.tostring(),(ip, g.WPORT))
 					print('Bridge: mode_i=%d (%s): ADMM is running...'%(mode_i,str(g.L_MODE[mode_i])))
@@ -71,9 +71,9 @@ if pid==0:
 				print('Bridge: Error: mode_i == -1')
 				input()	
 			else:
-				if g.L_MODE[mode_i][0] == 'Lasso':
-					if g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':				
-						if g.L_MODE[mode_i][3] == g.L_TAU[0]:  #tau=1, synchronous
+				if g.L_MODE[mode_i][1] == 'Lasso':
+					if g.L_MODE[mode_i][2] == 'StarADMM' or g.L_MODE[mode_i][2] == 'BridgeADMM':				
+						if g.L_MODE[mode_i][4] == g.L_TAU[0]:  #tau=1, synchronous
 							xu[addr[0]] = np.fromstring(r_msg,dtype=z.dtype).reshape([2,g.DD,1])  
 							l_row.append(addr[0])
 							nrow+=1
@@ -126,8 +126,8 @@ else:
 				nrob = 0 #number of received own bridges
 				k = 0
 				#3.setup data
-				if g.L_MODE[mode_i][0] == 'Lasso':
-					if g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':	
+				if g.L_MODE[mode_i][1] == 'Lasso':
+					if g.L_MODE[mode_i][2] == 'StarADMM' or g.L_MODE[mode_i][2] == 'BridgeADMM':	
 						A, b = db.load(['A','b'], mode_i, ip=ni.LOCAL_IP)
 						AtA = A.T.dot(A)
 						Atb = A.T.dot(b)
@@ -160,9 +160,9 @@ else:
 				print('Worker: Error: mode_i == -1')
 				input()	
 			else:
-				if g.L_MODE[mode_i][0] == 'Lasso':
-					if g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':				
-						if g.L_MODE[mode_i][3] == g.L_TAU[0]:  #tau=1, synchronous
+				if g.L_MODE[mode_i][1] == 'Lasso':
+					if g.L_MODE[mode_i][2] == 'StarADMM' or g.L_MODE[mode_i][2] == 'BridgeADMM':				
+						if g.L_MODE[mode_i][4] == g.L_TAU[0]:  #tau=1, synchronous
 							z[addr[0]] = np.fromstring(r_msg,dtype=x.dtype).reshape([g.DD,1])
 							l_rob.append(addr[0])
 							nrob += 1

@@ -20,11 +20,11 @@ def init_topology():
 
 def topology(mode_i):
 	G, = db.load(['G'])
-	if g.L_MODE[mode_i][0] == 'Lasso':
-		if g.L_MODE[mode_i][1] == 'SingleADMM':
+	if g.L_MODE[mode_i][1] == 'Lasso':
+		if g.L_MODE[mode_i][0] == 'SingleADMM':
 			db.save({'G':G},mode_i)
-		elif g.L_MODE[mode_i][1] == 'StarADMM':
-			if g.L_MODE[mode_i][2] == 'random':
+		elif g.L_MODE[mode_i][2] == 'StarADMM':
+			if g.L_MODE[mode_i][3] == 'random':
 				#star cluster graph: the weights of edges are based on the shortest path of G
 				Gstar = nx.star_graph(g.NN-1) 
 				Gstar = Gstar.to_directed()
@@ -35,8 +35,8 @@ def topology(mode_i):
 				#make selfloops 
 				Gstar.add_edges_from([(g.L_IP[0],g.L_IP[0], {'weight': 0.0})])
 				db.save({'G':Gstar},mode_i)
-		elif g.L_MODE[mode_i][1] == 'BridgeADMM':
-			if g.L_MODE[mode_i][2] == 'complete':
+		elif g.L_MODE[mode_i][2] == 'BridgeADMM':
+			if g.L_MODE[mode_i][3] == 'complete':
 				Gd = G.to_directed()	
 				#make selfloops 
 				l_nodes=list(Gd.nodes())

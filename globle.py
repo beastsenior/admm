@@ -40,18 +40,18 @@ L_TAU = [1,3,10,50]
 
 #mode of admm, single machine, star cluster, multiple bridge. As mode_i send as int8 over socket, len(L_MODE) should less than 128.
 # L_MODE = [\
-# ['Lasso','SingleADMM'],\
-# ['Lasso','StarADMM','random',L_TAU[0]],\
-# ['Lasso','StarADMM','random',L_TAU[1]],\
-# ['Lasso','StarADMM','random',L_TAU[2]],\
-# ['Lasso','StarADMM','random',L_TAU[3]],\
-# ['Lasso','BridgeADMM','complete',L_TAU[0]],\
+# ['mode label','Lasso','SingleADMM'],\
+# ['mode label','Lasso','StarADMM','random',L_TAU[0]],\
+# ['mode label','Lasso','StarADMM','random',L_TAU[1]],\
+# ['mode label','Lasso','StarADMM','random',L_TAU[2]],\
+# ['mode label','Lasso','StarADMM','random',L_TAU[3]],\
+# ['mode label','Lasso','BridgeADMM','complete',L_TAU[0]],\
 # ]
 L_MODE = [\
-['Lasso','SingleADMM','all_batch'],\
-['Lasso','SingleADMM','one_batch'],\
-['Lasso','StarADMM','random',L_TAU[0]],\
-['Lasso','BridgeADMM','complete',L_TAU[0]],\
+#['Basic-ADMM-Allbatch','Lasso','SingleADMM','all_batch'],\
+#['Basic-ADMM-Onebatch','Lasso','SingleADMM','one_batch'],\
+['Star-ADMM','Lasso','StarADMM','random',L_TAU[0]],\
+['Greedy-Bridge-ADMM','Lasso','BridgeADMM','complete',L_TAU[0]],\
 ]
 #direction for saving data
 DATA_DIR = './data/'

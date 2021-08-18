@@ -35,12 +35,12 @@ def init_data(problem):
 	print('Init data...done! (%s)'%(problem))
 
 def data(mode_i):
-	if g.L_MODE[mode_i][0] == 'Lasso':
-		if g.L_MODE[mode_i][1] == 'SingleADMM':
+	if g.L_MODE[mode_i][1] == 'Lasso':
+		if g.L_MODE[mode_i][2] == 'SingleADMM':
 			A, b = db.load(['A','b'])
 			db.save({'A':A,'b':b},mode_i)
 
-		elif g.L_MODE[mode_i][1] == 'StarADMM' or g.L_MODE[mode_i][1] == 'BridgeADMM':			
+		elif g.L_MODE[mode_i][2] == 'StarADMM' or g.L_MODE[mode_i][2] == 'BridgeADMM':			
 			A, b = db.load(['A','b'])
 			Ar=A.reshape([g.NN, g.ND, g.DD])
 			br=b.reshape([g.NN, g.ND, 1])

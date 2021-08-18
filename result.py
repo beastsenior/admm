@@ -60,4 +60,13 @@ def result(problem):
 			plt.plot(lineX, d_Lmin[mode_i], label=str(mode_i))
 		plt.legend()
 		
+		#ac vs. time
+		axes_Lmin = plt.subplot(224)
+		axes_Lmin.cla()
+		plt.yscale('log')
+		for mode_i in range(len(g.L_MODE)):
+			lineX = d_t[mode_i]
+			plt.plot(lineX, d_ac[mode_i], label=str(mode_i))
+		plt.legend()
+		
 		plt.show()
