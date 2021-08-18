@@ -15,16 +15,11 @@ def init_environment(role):
 			os.system('rm -r ./data')
 			os.mkdir(g.DATA_DIR)	
 	elif role == 'node':
-		#pidb=os.popen("netstat -nlp | grep "+str(g.BPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
-		#pidw=os.popen("netstat -nlp | grep "+str(g.WPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
-		pidb=os.popen("netstat -nlp | grep 46762 | awk '{print $6}' | awk -F'/' '{ print $1 }'")
-		pidw=os.popen("netstat -nlp | grep 666 | awk '{print $6}' | awk -F'/' '{ print $1 }'")
-		#pidb=pidb.replace('\n','').replace('\r','').replace(' ','')
-		#pidw=pidb.replace('\n','').replace('\r','').replace(' ','')
-		#pid=str(pidb.read()+' '+pidw.read()).replace('\n',' ').replace('\r',' ')
+		pidb=os.popen("netstat -nlp | grep "+str(g.BPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
+		pidw=os.popen("netstat -nlp | grep "+str(g.WPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
 		pid=str(pidb.read()+pidw.read()).replace('\n',' ').replace('\r',' ')
 		if len(pid) > 1: 
-			#os.popen('kill ' + pid)
+			os.popen('kill ' + pid)
 			print('PID: (%s) has killed.'%pid)
 	else:
 		print('Error: wrong environment role.')
