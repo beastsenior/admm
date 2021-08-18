@@ -21,7 +21,7 @@ def init_topology():
 def topology(mode_i):
 	G, = db.load(['G'])
 	if g.L_MODE[mode_i][1] == 'Lasso':
-		if g.L_MODE[mode_i][0] == 'SingleADMM':
+		if g.L_MODE[mode_i][2] == 'SingleADMM':
 			db.save({'G':G},mode_i)
 		elif g.L_MODE[mode_i][2] == 'StarADMM':
 			if g.L_MODE[mode_i][3] == 'random':
