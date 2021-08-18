@@ -18,7 +18,6 @@ def init_environment(role):
 		pidb=os.popen("netstat -nlp | grep "+str(g.BPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
 		pidw=os.popen("netstat -nlp | grep "+str(g.WPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
 		pid=pidb.read()+' '+pidw.read()
-		print('PID: (%s) has killed'%pid)
 		if len(pid) > 1: 
 			os.popen('kill ' + pid)
 			print('PID: (%s) has killed'%pid)
