@@ -20,6 +20,7 @@ def init_environment(role):
 		pid=pidb.read()+' '+pidw.read()
 		if len(pid) > 1: 
 			os.popen('kill ' + pid)
+			print('PID: () has killed'%pid)
 	else:
 		print('Error: wrong environment role.')
 		input()		
