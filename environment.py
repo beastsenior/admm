@@ -15,11 +15,13 @@ def init_environment(role):
 			os.system('rm -r ./data')
 			os.mkdir(g.DATA_DIR)	
 	elif role == 'node':
-		pidb=os.popen("netstat -nlp | grep "+str(g.BPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
-		pidw=os.popen("netstat -nlp | grep "+str(g.WPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
+		#pidb=os.popen("netstat -nlp | grep "+str(g.BPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
+		#pidw=os.popen("netstat -nlp | grep "+str(g.WPORT)+" | awk '{print $6}' | awk -F'/' '{ print $1 }'")
+		pidb=os.popen("netstat -nlp | grep 46762 | awk '{print $6}' | awk -F'/' '{ print $1 }'")
+		pidw=os.popen("netstat -nlp | grep 666 | awk '{print $6}' | awk -F'/' '{ print $1 }'")
 		pid=pidb.read()+' '+pidw.read()
 		if len(pid) > 1: 
-			os.popen('kill ' + pid)
+			#os.popen('kill ' + pid)
 			print('PID: (%s) has killed.'%pid)
 	else:
 		print('Error: wrong environment role.')
