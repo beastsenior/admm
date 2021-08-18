@@ -39,7 +39,7 @@ def result(problem):
 		plt.xlim(-5, g.ITER+5)
 		lineX = np.linspace(0, g.ITER, g.ITER)		
 		for mode_i in range(len(g.L_MODE)):
-			plt.plot(lineX, d_Lmin[mode_i], label=str(mode_i))
+			plt.plot(lineX, d_Lmin[mode_i], label=str(g.L_MODE[mode_i][0]))
 		plt.legend()
 		
 		#ac vs. iter
@@ -48,7 +48,7 @@ def result(problem):
 		plt.yscale('log')
 		plt.xlim(-5, g.ITER+5)
 		for mode_i in range(len(g.L_MODE)):
-			plt.plot(lineX, d_ac[mode_i], label=str(mode_i))
+			plt.plot(lineX, d_ac[mode_i], label=str(g.L_MODE[mode_i][0]))
 		plt.legend()
 
 		#Lmin vs. time
@@ -57,7 +57,7 @@ def result(problem):
 		plt.yscale('log')
 		for mode_i in range(len(g.L_MODE)):
 			lineX = d_t[mode_i]
-			plt.plot(lineX, d_Lmin[mode_i], label=str(mode_i))
+			plt.plot(lineX, d_Lmin[mode_i], label=str(g.L_MODE[mode_i][0]))
 		plt.legend()
 		
 		#ac vs. time
@@ -66,7 +66,7 @@ def result(problem):
 		plt.yscale('log')
 		for mode_i in range(len(g.L_MODE)):
 			lineX = d_t[mode_i]
-			plt.plot(lineX, d_ac[mode_i], label=str(mode_i))
+			plt.plot(lineX, d_ac[mode_i], label=str(g.L_MODE[mode_i][0]))
 		plt.legend()
 		
 		plt.show()
